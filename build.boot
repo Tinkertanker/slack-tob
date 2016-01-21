@@ -5,6 +5,9 @@
                  [org.danielsz/system "0.2.0"]
                  [com.stuartsierra/component "0.3.1"]
                  [aleph "0.4.1-beta3"]
+                 [bidi "1.25.0"]
+                 [yada "1.1.0-SNAPSHOT"]
+                 [org.clojure/core.cache "0.6.4"]
 
                  ;;Logging
                  [com.taoensso/timbre "4.2.1"]])
@@ -26,6 +29,7 @@
 (deftask dev []
   (comp
    (watch :verbose true)
+   (repl :server true)
    (system :sys #'dev-system :auto-start true :hot-reload true)
    ))
 

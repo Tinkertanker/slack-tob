@@ -1,6 +1,20 @@
-(ns tob.handler)
+(ns tob.handler
+  (:require [bidi.ring :refer [make-handler]]
+            [yada.yada :refer [yada] :as yada]))
 
-(defn handler [req]
-  {:status 200
-   :headers {"content-type" "text/plain"}
-   :body "Hello world!"})
+(def index-handler
+  (yada "Hello World!"))
+
+(def fourohfour-handler
+  (yada "404 not found."))
+
+(def admin-handler
+  (yada "admin stuff"))
+
+(def routes
+  ["/" {"" index-handler
+        "admin/" {"" admin-handler}
+        true fourohfour-handler}])
+
+(def handler
+  (make-handler routes))
