@@ -5,6 +5,7 @@
                  [org.danielsz/system "0.2.0"]
                  [com.stuartsierra/component "0.3.1"]
                  [aleph "0.4.1-beta3"]
+                 [cheshire "5.5.0"]
                  [bidi "1.25.0"]
                  [yada "1.1.0-SNAPSHOT"]
                  [org.clojure/core.cache "0.6.4"]

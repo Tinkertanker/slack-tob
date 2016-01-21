@@ -3,7 +3,7 @@
             [yada.yada :refer [yada] :as yada]))
 
 (def index-handler
-  (yada "Hello World!"))
+  (yada (atom "Hello World!")))
 
 (def fourohfour-handler
   (yada "404 not found."))
