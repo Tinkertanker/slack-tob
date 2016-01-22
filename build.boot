@@ -9,6 +9,7 @@
                  [bidi "1.25.0"]
                  [yada "1.1.0-SNAPSHOT"]
                  [org.clojure/core.cache "0.6.4"]
+                 [hiccup "1.0.5"]
 
                  ;;Logging
                  [com.taoensso/timbre "4.2.1"]])
