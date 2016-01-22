@@ -1,13 +1,10 @@
 (ns tob.resources
   (:require [yada.yada :refer [yada] :as yada]
             [yada.resource :refer [resource]]
+            [yada.resources.file-resource :refer [new-directory-resource]]
             [schema.core :as s]
             [tob.slack :as slack]
             [tob.html :as html]
-            [bidi.ring :refer [make-handler resources-maybe]]
-            [yada.yada :refer [yada] :as yada]
-            [yada.resources.file-resource :refer [new-directory-resource]]
-            [tob.resources :refer [signup-resource]]
             [clojure.java.io :as io]))
 
 (def signup-resource
