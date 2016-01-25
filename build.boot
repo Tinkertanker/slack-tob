@@ -12,11 +12,16 @@
                  [hiccup "1.0.5"]
 
                  ;;Logging
-                 [com.taoensso/timbre "4.2.1"]])
+                 [com.taoensso/timbre "4.2.1"]
+
+                 ;;Assets
+                 [mathias/boot-sassc "0.1.5"]
+                 ])
 
 (require '[tob.core :refer :all])
 (require '[tob.systems :refer [dev-system prod-system]])
 (require '[system.boot :refer [system run]])
+(require '[mathias.boot-sassc :refer [sass]])
 
 (deftask testing
   "Profile setup for running tests."
@@ -39,3 +44,14 @@
   (comp 
    (run :main-namespace "tob.core")
    (wait)))
+
+(deftask scss-profile []
+  (set-env! :resource-paths #{"sass"})
+  identity)
+
+(deftask scss []
+  (comp
+   (scss-profile)
+   (watch)
+   (sass :sass-file "main.scss")
+   (sift :move {#"main.css" "../resources/public/css/main.css"})))
