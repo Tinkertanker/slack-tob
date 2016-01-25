@@ -3,3 +3,5 @@
 *target
 *.sass-cache
 *.DS_Store
+*.sass-cache
+*/target/
