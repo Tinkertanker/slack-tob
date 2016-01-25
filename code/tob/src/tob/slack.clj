@@ -68,3 +68,6 @@
     (if (:ok res)
       (:url res)
       (log/error (str ";; Error getting WS url response received: " res)))))
+
+(defn conn-db []
+  (get-res "127.0.0.1:5984"))
