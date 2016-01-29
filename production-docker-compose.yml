@@ -1,0 +1,15 @@
+app-dev:
+  image: jethrokuan/tob
+  command: prod
+  ports:
+    - "80:8080"
+  links:
+    - couchdb
+couchdb:
+  image: frodenas/couchdb
+  ports:
+    - "5984:5984"
+  environment:
+    - COUCHDB_USERNAME=tob
+    - COUCHDB_PASSWORD=tobtob
+    - COUCHDB_DBNAME=tob
