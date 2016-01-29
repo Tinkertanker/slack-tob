@@ -2,7 +2,6 @@ app-dev:
   build: containers/app-dev
   command: bash -c "cd /root/code/tob && boot dev"
   ports:
-    - "80:8080"
     - "3000:3000"
     - "1337:1337"
   volumes:

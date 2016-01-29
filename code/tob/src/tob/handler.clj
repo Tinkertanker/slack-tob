@@ -1,9 +1,8 @@
 (ns tob.handler
-  (:require [bidi.ring :refer [make-handler resources-maybe]]
-            [yada.yada :refer [yada] :as yada]
-            [yada.resources.file-resource :refer [new-directory-resource]]
-            [tob.resources :refer [signup-resource sf-resource]]
-            [clojure.java.io :as io]))
+  (:require [bidi.ring :refer [make-handler]]
+            [clojure.java.io :as io]
+            [tob.resources :refer [signup-resource]]
+            [yada.yada :refer [yada] :as yada]))
 
 (def fof-handler
   (yada "404 not found."))
@@ -12,9 +11,9 @@
   (yada "admin stuff"))
 
 (def routes
-  ["/" {"" (yada signup-resource)
+  ["/" {"signup/" (yada signup-resource)
         "admin/" {"" admin-handler}
-        "resources/" (yada sf-resource)
+        "resources/" (yada (io/file "resources/public"))
         true fof-handler}])
 
 (def handler

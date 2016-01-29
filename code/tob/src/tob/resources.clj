@@ -1,11 +1,9 @@
 (ns tob.resources
   (:require [yada.yada :refer [yada] :as yada]
             [yada.resource :refer [resource]]
-            [yada.resources.file-resource :refer [new-directory-resource]]
             [schema.core :as s]
             [tob.slack :as slack]
-            [tob.html :as html]
-            [clojure.java.io :as io]))
+            [tob.html :as html]))
 
 (def signup-resource
   (resource
@@ -24,8 +22,3 @@
                                  (let [email (get-in ctx [:parameters :form :email])
                                        channel (get-in ctx [:parameters :form :channel])]
                                    "text/html" (slack/process-signup email channel)))}}}))
-
-(def sf-resource
-  (new-directory-resource
-   (io/file (io/resource "public"))
-   {}))

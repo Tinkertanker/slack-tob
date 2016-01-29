@@ -33,13 +33,6 @@
   "Fetches dependencies."
   [])
 
-(deftask dev []
-  (comp
-   (watch :verbose true)
-   (repl :server true)
-   (system :sys #'dev-system :auto-start true :hot-reload true)
-   ))
-
 (deftask prod []
   (comp 
    (run :main-namespace "tob.core")
@@ -52,6 +45,13 @@
 (deftask scss []
   (comp
    (scss-profile)
-   (watch)
    (sass :sass-file "main.scss")
    (sift :move {#"main.css" "../resources/public/css/main.css"})))
+
+(deftask dev []
+  (comp
+   (watch :verbose true)
+   (scss)
+   (repl :server true)
+   (system :sys #'dev-system :auto-start true :hot-reload true)
+   ))

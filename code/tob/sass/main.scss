@@ -12,7 +12,7 @@
     padding-top: 200px;
     .hero {
 	@include span-columns(8);
-	@include shift(1);
+	@include shift(2);
 	@include media($medium-screen) {
 	    @include span-columns(8);
 	    @include shift(0);
