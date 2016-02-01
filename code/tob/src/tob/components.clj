@@ -26,39 +26,36 @@
 (defn new-web-server [port handler]
   (map->WebServer {:port port :handler handler}))
 
-(defprotocol WebSocket
-  (ping [this])
-  (dc? [this]))
-
 (defn send-msg [conn message]
   (let [json (generate-string message)]
     (s/put! conn json)))
 
+(defn- ping [conn id]
+  (future (d/loop []
+            (Thread/sleep 5000)
+            (send-msg conn {:id id :type "ping"})
+            (d/recur))))
+
 (defrecord WSClient [id msg-count status handler conn]
-  WebSocket
-  (ping [_]
-    (prn conn)
-    #_(if conn
-        (future (d/loop []
-                  (Thread/sleep 5000)
-                  (prn "pinging")
-                  (send-msg conn {:type "ping"})
-                  (d/recur)))))
-  (dc? [_]
-    (prn "I dc-ed")) 
   component/Lifecycle
   (start [component]
-    (let [ws-url (slack/get-ws-url)
-          conn (slack/rtm-connect ws-url)]
+    (let [msg-count (atom 0)
+          ws-url (slack/get-ws-url)
+          conn (slack/rtm-connect ws-url)
+          status (atom true)]
       (log/info "Starting WS")
-      (s/consume #(-> %
-                      (parse-string true)
-                      (handler)) conn)
-      (ping component)
+      (s/consume (fn [msg]
+                   (do (swap! msg-count inc)
+                       (-> msg
+                           (parse-string true)
+                           handler))
+                   conn))
+      #_(ping conn)
       (assoc component
              :status true
-             :msg-count (atom 0)
+             :msg-count msg-count
              :conn conn)))
+  
   (stop [component]
     (when status
       (log/info "Closing WS")
