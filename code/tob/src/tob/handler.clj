@@ -11,7 +11,8 @@
   (yada "admin stuff"))
 
 (def routes
-  ["/" {"signup/" (yada signup-resource)
+  ["/" {"" (yada "Landing Page should go here.")
+        "signup/" (yada signup-resource)
         "admin/" {"" admin-handler}
         "resources/" (yada (io/file "resources/public"))
         true fof-handler}])

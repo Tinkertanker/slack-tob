@@ -61,13 +61,14 @@
 ;;;;;;;;;;;;;;;;
 ;; Websockets ;;
 ;;;;;;;;;;;;;;;;
-(defn- get-ws-url
+(defn get-ws-url
   "Sends GET req to RTM URL"
-  [token]
-  (let [res (get-res RTM-START-URL {:token token})]
+  []
+  (let [res (get-res RTM-START-URL {:token TOKEN})]
     (if (:ok res)
       (:url res)
       (log/error (str ";; Error getting WS url response received: " res)))))
 
-(defn conn-db []
-  (get-res "127.0.0.1:5984"))
+
+(defn rtm-connect [url]
+  @(http/websocket-client url))
