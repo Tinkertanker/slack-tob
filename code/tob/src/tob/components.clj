@@ -3,10 +3,11 @@
             [tob.slack :as slack]
             [manifold.deferred :as d]
             [manifold.stream :as s]
-            [cheshire.core :refer [generate-string parse-string]]
+            [cheshire.core :refer [parse-string]]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [taoensso.timbre.appenders.core :as appenders]))
+            [taoensso.timbre.appenders.core :as appenders])
+  (:import [java.time Instant]))
 
 (log/merge-config!
  {:appenders {:spit (appenders/spit-appender {:fname "log.txt"})}})
@@ -26,45 +27,33 @@
 (defn new-web-server [port handler]
   (map->WebServer {:port port :handler handler}))
 
-(defn send-msg [conn message]
-  (let [json (generate-string message)]
-    (s/put! conn json)))
-
-(defn- ping [conn id]
-  (future (d/loop []
-            (Thread/sleep 5000)
-            (send-msg conn {:id id :type "ping"})
-            (d/recur))))
-
-(defrecord WSClient [id msg-count status handler conn]
+(defrecord WSClient [state handler]
   component/Lifecycle
   (start [component]
-    (let [msg-count (atom 0)
-          ws-url (slack/get-ws-url)
+    (let [ws-url (slack/get-ws-url)
           conn (slack/rtm-connect ws-url)
-          status (atom true)]
+          state {:status (atom false)
+                 :last-seen (atom (Instant/now))
+                 :count (atom 1)
+                 :recon (atom nil)
+                 :conn (atom conn)}
+          new-comp (assoc component :state state)]
       (log/info "Starting WS")
-      (s/consume (fn [msg]
-                   (do (swap! msg-count inc)
-                       (-> msg
-                           (parse-string true)
-                           handler))
-                   conn))
-      #_(ping conn)
-      (assoc component
-             :status true
-             :msg-count msg-count
-             :conn conn)))
-  
+      (s/consume
+       (fn [msg]
+         (-> msg
+             (parse-string true)
+             (handler new-comp)))
+       @(:conn state))
+      new-comp))
   (stop [component]
-    (when status
+    (when @(:status state)
+      (log/info "Commencing WebSocket shutdown:")
+      (log/info "Reset status: " (reset! (:status state) false))
       (log/info "Closing WS")
-      (s/close! conn)
+      (s/close! @(:conn state))
       (assoc component
-             :status false
-             :msg-count (atom 0)
-             :url nil
-             :conn nil))))
+             :state nil))))
 
-(defn new-ws-client [id handler]
-  (map->WSClient {:id id :handler handler}))
+(defn new-ws-client [handler]
+  (map->WSClient {:handler handler}))

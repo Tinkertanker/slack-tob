@@ -8,9 +8,10 @@
   []
   (component/system-map
    :web (new-web-server 3000 handler)
-   :ws (new-ws-client (rand-int 100) event-handler)))
+   :ws (new-ws-client event-handler)))
 
 (defn prod-system
   []
   (component/system-map
-   :web (new-web-server 8080 handler)))
+   :web (new-web-server 8080 handler)
+   :ws (new-ws-client event-handler)))

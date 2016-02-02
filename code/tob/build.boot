@@ -51,7 +51,7 @@
 (deftask dev []
   (comp
    (watch :verbose true)
-   (scss)
-   (repl :server true)
+   #_(scss)
+   #_   (repl :server true)
    (system :sys #'dev-system :auto-start true :hot-reload true)
    ))
