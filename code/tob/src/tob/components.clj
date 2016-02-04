@@ -1,6 +1,7 @@
 (ns tob.components
   (:require [aleph.http :refer [start-server]]
             [tob.slack :as slack]
+            [tob.rtm :refer [send-msg]]
             [manifold.deferred :as d]
             [manifold.stream :as s]
             [cheshire.core :refer [parse-string]]
@@ -27,18 +28,20 @@
 (defn new-web-server [port handler]
   (map->WebServer {:port port :handler handler}))
 
-(defrecord WSClient [state handler]
+(defrecord WSClient [state handler msg-q]
   component/Lifecycle
   (start [component]
     (let [ws-url (slack/get-ws-url)
           conn (slack/rtm-connect ws-url)
+          msg-q (s/stream 50)
           state {:status (atom false)
                  :last-seen (atom (Instant/now))
                  :count (atom 1)
                  :recon (atom nil)
                  :conn (atom conn)}
-          new-comp (assoc component :state state)]
+          new-comp (assoc component :state state :msg-q msg-q)]
       (log/info "Starting WS")
+      (s/consume #(send-msg @(:conn state) %) msg-q)
       (s/consume
        (fn [msg]
          (-> msg
@@ -52,6 +55,7 @@
       (log/info "Reset status: " (reset! (:status state) false))
       (log/info "Closing WS")
       (s/close! @(:conn state))
+      (s/close! msg-q)
       (assoc component
              :state nil))))
 
