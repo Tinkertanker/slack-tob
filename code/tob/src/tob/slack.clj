@@ -1,9 +1,8 @@
 (ns tob.slack
   (:require [aleph.http :as http]
-            [byte-streams :as bs]
-            [cheshire.core :refer [parse-string]]
             [taoensso.timbre :as log]
-            [tob.html :as html]))
+            [tob.html :as html]
+            [tob.utils :refer :all]))
 
 (def ^:private TOKEN "xoxp-4246027421-18462374129-18462489777-be28887f1d")
 (def ^:private TEAM-INVITE-URL "https://tinkercademy.slack.com/api/users.admin.invite")
@@ -12,30 +11,6 @@
 (def ^:private USER-LIST-URL "https://slack.com/api/users.list")
 (def ^:private GROUPS-LIST-URL "https://slack.com/api/groups.list")
 (def ^:private RTM-START-URL "https://slack.com/api/rtm.start")
-
-;;;;;;;;;;;;;;;;;
-;; Slack Utils ;;
-;;;;;;;;;;;;;;;;;
-(defn- get-res
-  "Sends asynchronous GET request with params, returns BODY"
-  ([url]
-   (-> @(http/get url)
-       :body
-       bs/to-string
-       (parse-string true)))
-  ([url params]
-   (-> @(http/get url {:query-params params})
-       :body
-       bs/to-string
-       (parse-string true))))
-
-(defn- send-req
-  "Sends asynchronous POST request with params, returns BODY"
-  [url params]
-  (-> @(http/post url {:form-params params})
-      :body
-      bs/to-string
-      (parse-string true)))
 
 ;;;;;;;;;;;;;;;;;;
 ;; Slack Invite ;;

@@ -3,7 +3,8 @@
             [manifold.deferred :as d]
             [manifold.stream :as s]
             [cheshire.core :refer [generate-string parse-string]]
-            [tob.slack :as slack])
+            [tob.slack :as slack]
+            [tob.dict :as dict])
   (:import [java.time Instant]
            [java.time.temporal ChronoUnit]))
 
@@ -75,12 +76,26 @@
    "Reconnect URL received: updating state:"
    (reset! (:recon state) (:url event))))
 
-(defmethod event-handler "user_typing" [event {:keys [state msg-q] :as client}]
-  (s/put! msg-q {:id @(:count state)              
-                 :type "message"
-                 :channel (:channel event)
-                 :text "shhhh"})
-  (swap! (:count state) inc))
+(defmethod event-handler "message" [{:keys [text] :as event} {:keys [state msg-q] :as client}]
+  (if-let [word (second (re-seq #"what is|\w+" text))]
+    (s/put! msg-q {:id @(:count state)
+                   :type "message"
+                   :channel (:channel event)
+                   :text (let [definition (dict/word-defn word)]
+                           (if (:error definition)
+                             (:message definition)
+                             (if-let [msg (:message definition)]
+                               (str word " is " (clojure.string/lower-case msg))
+                               (str word " does not exist")
+                               )))})
+    (log/info "no match for this sentence")))
+
+#_(defmethod event-handler "user_typing" [event {:keys [state msg-q] :as client}]
+    (s/put! msg-q {:id @(:count state)              
+                   :type "message"
+                   :channel (:channel event)
+                   :text "shhhh"})
+    (swap! (:count state) inc))
 
 (defmethod event-handler :default [event {:keys [state] :as client}]
   (prn event))

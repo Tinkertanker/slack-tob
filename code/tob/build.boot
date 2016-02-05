@@ -16,12 +16,16 @@
 
                  ;;Assets
                  [mathias/boot-sassc "0.1.5"]
+
+                 ;;Packaging
+                 [adzerk/boot-ubermain "1.0.0-SNAPSHOT"]
                  ])
 
 (require '[tob.core :refer :all])
 (require '[tob.systems :refer [dev-system prod-system]])
 (require '[system.boot :refer [system run]])
 (require '[mathias.boot-sassc :refer [sass]])
+(require '[adzerk.boot-ubermain :refer [ubermain]])
 
 (deftask testing
   "Profile setup for running tests."
@@ -52,6 +56,9 @@
   (comp
    (watch :verbose true)
    #_(scss)
-   #_   (repl :server true)
+   (repl :server true)
    (system :sys #'dev-system :auto-start true :hot-reload true)
    ))
+
+(deftask pkg []
+  (ubermain :main-var 'tob.core/-main))
