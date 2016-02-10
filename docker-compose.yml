@@ -8,14 +8,8 @@ app-dev:
     - ./code:/root/code
     - ~/.m2/:/m2
   links:
-    - couchdb
-couchdb:
-  image: frodenas/couchdb
+    - redis
+redis:
+  image: redis
   ports:
-    - "5984:5984"
-  environment:
-    - COUCHDB_USERNAME=tob
-    - COUCHDB_PASSWORD=tobtob
-    - COUCHDB_DBNAME=tob
-  volumes:
-    - /tmp/couchdb:/data
+    - "6379:6379"

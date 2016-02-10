@@ -11,6 +11,9 @@
                  [org.clojure/core.cache "0.6.4"]
                  [hiccup "1.0.5"]
 
+                 ;;DB
+                 [com.taoensso/carmine "2.12.2"]
+
                  ;;Logging
                  [com.taoensso/timbre "4.2.1"]
 
@@ -19,6 +22,7 @@
 
                  ;;Packaging
                  [adzerk/boot-ubermain "1.0.0-SNAPSHOT"]
+                 [adzerk/bootlaces "0.1.13" :scope "test"]
                  ])
 
 (require '[tob.core :refer :all])
@@ -26,6 +30,10 @@
 (require '[system.boot :refer [system run]])
 (require '[mathias.boot-sassc :refer [sass]])
 (require '[adzerk.boot-ubermain :refer [ubermain]])
+(require '[adzerk.bootlaces :refer :all])
+
+(def +version+ "0.0.1")
+(bootlaces! +version+)
 
 (deftask testing
   "Profile setup for running tests."
@@ -37,10 +45,10 @@
   "Fetches dependencies."
   [])
 
-(deftask prod []
-  (comp 
-   (run :main-namespace "tob.core")
-   (wait)))
+#_(deftask prod []
+    (comp 
+     (run :main-namespace "tob.core")
+     (wait)))
 
 (deftask scss-profile []
   (set-env! :resource-paths #{"sass"})
@@ -56,9 +64,10 @@
   (comp
    (watch :verbose true)
    #_(scss)
-   (repl :server true)
+   (repl :server true :port 1337 :bind "0.0.0.0")
    (system :sys #'dev-system :auto-start true :hot-reload true)
    ))
 
 (deftask pkg []
-  (ubermain :main-var 'tob.core/-main))
+  (comp
+   (ubermain :main-var 'tob.core/-main)))

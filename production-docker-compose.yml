@@ -1,15 +1,12 @@
 app-dev:
   image: jethrokuan/tob
-  command: prod
   ports:
     - "80:8080"
+    - "1337:1337"
   links:
-    - couchdb
-couchdb:
-  image: frodenas/couchdb
+    - redis
+redis:
+  image: redis
+  command: redis-server --appendonly yes
   ports:
-    - "5984:5984"
-  environment:
-    - COUCHDB_USERNAME=tob
-    - COUCHDB_PASSWORD=tobtob
-    - COUCHDB_DBNAME=tob
+    - "6379:6379"

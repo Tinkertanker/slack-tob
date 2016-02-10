@@ -4,11 +4,15 @@
             [manifold.stream :as s]
             [cheshire.core :refer [generate-string parse-string]]
             [tob.slack :as slack]
-            [tob.dict :as dict])
+            [tob.db :as db]
+            [tob.utils :refer :all]
+            #_[tob.dict :as dict])
   (:import [java.time Instant]
            [java.time.temporal ChronoUnit]))
 
 (def PING_PONG 10)
+(def ^:private ANN_CHAN_ID "C04780TCT")
+(def ^:private TESTING_CHAN_ID "C0HMV8QF7")
 
 (defn time-diff
   "Returns the difference (in seconds) between two Instant instances, i1 and i2"
@@ -57,38 +61,46 @@
             (log/info "Closing msg-q..." (s/close! msg-q))
             (ws-recon client)))))))
 
-(defmulti event-handler (fn [event client] (:type event)))
+(defmulti event-handler (fn [event client] ((juxt :type :subtype) event)))
 
-(defmethod event-handler "hello" [event {:keys [state] :as client}]
+(defmethod event-handler ["hello" nil] [event {:keys [state] :as client}]
   (log/info
    "Hello received, updating state:"
    (reset! (:status state) true))
   (ping-pong-loop client))
 
-(defmethod event-handler "pong" [event {:keys [state] :as client}]
+(defmethod event-handler ["pong" nil] [event {:keys [state] :as client}]
   (let [id (:reply_to event)]
-    (when (= 0 (mod id 10))
+    (when (= 0 (mod id 20))
       (log/info "Still receiving pong with ID: " id)))
   (reset! (:last-seen state) (Instant/now)))
 
-(defmethod event-handler "reconnect_url" [event {:keys [state] :as client}]
+(defmethod event-handler ["reconnect_url" nil] [event {:keys [state] :as client}]
   (log/info
    "Reconnect URL received: updating state:"
    (reset! (:recon state) (:url event))))
 
-(defmethod event-handler "message" [{:keys [text] :as event} {:keys [state msg-q] :as client}]
-  (if-let [word (second (re-seq #"what is|\w+" text))]
-    (s/put! msg-q {:id @(:count state)
-                   :type "message"
-                   :channel (:channel event)
-                   :text (let [definition (dict/word-defn word)]
-                           (if (:error definition)
-                             (:message definition)
-                             (if-let [msg (:message definition)]
-                               (str word " is " (clojure.string/lower-case msg))
-                               (str word " does not exist")
-                               )))})
-    (log/info "no match for this sentence")))
+(defmethod event-handler ["message" "channel_join"] [{:keys [user channel] :as event} {:keys [state] :as client}]
+  (when (= ANN_CHAN_ID channel)
+    (let [usr (slack/id->user user)
+          email (get-in usr [:profile :email])]
+      (if-let [chan (:channel (db/get-chan email))]
+        (slack/invite-to-channel usr chan)
+        (log/error (str email "not in Redis DB"))))))
+
+#_(defmethod event-handler "message" [{:keys [text] :as event} {:keys [state msg-q] :as client}]
+    (if-let [word (second (re-seq #"what is|\w+" text))]
+      (s/put! msg-q {:id @(:count state)
+                     :type "message"
+                     :channel (:channel event)
+                     :text (let [definition (dict/word-defn word)]
+                             (if (:error definition)
+                               (:message definition)
+                               (if-let [msg (:message definition)]
+                                 (str word " is " (clojure.string/lower-case msg))
+                                 (str word " does not exist")
+                                 )))})
+      (log/info "no match for this sentence")))
 
 #_(defmethod event-handler "user_typing" [event {:keys [state msg-q] :as client}]
     (s/put! msg-q {:id @(:count state)              
