@@ -32,6 +32,10 @@
 
 (def error-already-in-team-page (error-page "You're already in Slack. You can sign in <a href=\"http://tk.sg/slack\">here</a> with your credentials."))
 
+(def error-invalid-email-page (error-page "Your email is invalid. Please try again."))
+
+(def error-generic-page (error-page "Generic error gratz."))
+
 (def error-403-page (error-page "Error 403. Permission Denied."))
 
 (def error-404-page (error-page "Error 404. Page not found."))

@@ -15,16 +15,13 @@
        deref
        (parse-string true)))
   ([url params]
-   (-> @(http/get url {:query-params params})
-       :body
-       bs/to-string
+   (-> (d/chain (http/get url {:query-params params :connection-timeout 10000})
+                :body
+                bs/to-string)
+       (d/catch Exception (fn [e]
+                            (str "{\"error\":\"" "Timed out after 10s" "\"}")))
+       deref
        (parse-string true))))
-
-(defn lookup2 [url]
-  (-> @(http/get url)
-      :body
-      bs/to-string
-      prn))
 
 (defn send-req
   "Sends asynchronous POST request with params, returns BODY"

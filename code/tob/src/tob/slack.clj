@@ -31,13 +31,14 @@
                      members)]
     (make-user user)))
 
-(defn invite-to-channel [user chan]
+(defn invite-to-channel [user-id chan]
   (let [inv (get-res GROUPS-INVITE-URL {:token TOKEN
-                                        :user (:id user)
+                                        :user (:id user-id)
                                         :channel chan})]
+    (prn inv)
     (if (:ok inv)
-      (log/info "Invite success for " (:name user))
-      (log/error (str "Invite failed for " (:name user) "\n error: " (:error inv))))))
+      (log/info "Invite success for" user-id)
+      (log/error (str "Invite failed for " user-id "\n error: " (:error inv))))))
 
 ;;;;;;;;;;;;;;;;;;
 ;; Slack Invite ;;
@@ -45,7 +46,9 @@
 (defn- dispatch-error [err]
   (condp = err
     "already_invited" html/error-already-invited-page
-    "already_in_team" html/error-already-in-team-page))
+    "already_in_team" html/error-already-in-team-page
+    "invalid_email" html/error-invalid-email-page
+    html/error-generic-page))
 
 (defn process-signup
   "Sends invite to email, adds email, channel to table if invite succeeded"
