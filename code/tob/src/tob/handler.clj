@@ -13,8 +13,8 @@
 (def routes
   ["/" [["" (yada "Landing Page should go here.\n")]
         ["signup/" (yada signup-resource)]
-        ["admin/" {"" admin-handler}]
-        ["resources/" (yada (io/file "public"))]
+        ["admin/" admin-handler]
+        ["resources/" (yada (io/file "resources/public"))]
         [true fof-handler]]])
 
 (def handler
