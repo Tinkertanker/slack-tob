@@ -80,15 +80,15 @@
    "Reconnect URL received: updating state:"
    (reset! (:recon state) (:url event))))
 
-(defmethod event-handler ["message" "channel_join"] [{:keys [user channel] :as event} {:keys [state] :as client}]
-  (when (= ANN_CHAN_ID channel)
-    (let [usr (slack/id->user user)
-          email (get-in usr [:profile :email])]
-      (if-let [chan (:channel (db/get-chan email))]
-        (do
-          (log/info "Inviting" email "id" user "to" chan "...")
-          (slack/invite-to-channel user chan))
-        (log/error (str email "not in Redis DB"))))))
+#_(defmethod event-handler ["message" "channel_join"] [{:keys [user channel] :as event} {:keys [state] :as client}]
+    (when (= ANN_CHAN_ID channel)
+      (let [usr (slack/id->user user)
+            email (get-in usr [:profile :email])]
+        (if-let [chan (:channel (db/get-chan email))]
+          (do
+            (log/info "Inviting" email "id" user "to" chan "...")
+            (slack/invite-to-channel user chan))
+          (log/error (str email "not in Redis DB"))))))
 
 #_(defmethod event-handler "message" [{:keys [text] :as event} {:keys [state msg-q] :as client}]
     (if-let [word (second (re-seq #"what is|\w+" text))]
